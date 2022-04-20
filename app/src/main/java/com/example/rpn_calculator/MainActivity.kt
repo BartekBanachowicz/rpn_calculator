@@ -6,7 +6,9 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.preference.PreferenceManager
@@ -16,10 +18,16 @@ import java.util.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.sqrt
+import kotlinx.android.synthetic.main.activity_main.*
+import java.nio.file.spi.FileTypeDetector
+import kotlin.collections.ArrayList
+import kotlin.math.abs
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     lateinit var binding: ActivityMainBinding
+    private lateinit var gDetector: GestureDetector
     var stack = LinkedList<String>()
+    var backupStack = LinkedList<LinkedList<String>>()
     var newEntry = ""
     var entryMode = false
     var scale = 0
@@ -42,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             scale = 0
         }
 
+        gDetector = GestureDetector(this, this)
         title = "RPN Calculator"
         setContentView(view)
 
@@ -106,15 +115,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun swap() {
-        val temp1 = stack.removeFirst()
-        val temp2 = stack.removeFirst()
-        stack.addFirst(temp1)
-        stack.addFirst(temp2)
+        if(stack.size > 1){
+            backupStack.addFirst(LinkedList(stack))
+            val temp1 = stack.removeFirst()
+            val temp2 = stack.removeFirst()
+            stack.addFirst(temp1)
+            stack.addFirst(temp2)
 
-        if (entryMode) {
-            showEntryMode()
-        } else {
-            showNormalMode()
+            if (entryMode) {
+                showEntryMode()
+            } else {
+                showNormalMode()
+            }
         }
     }
 
@@ -140,6 +152,7 @@ class MainActivity : AppCompatActivity() {
 
     fun enter() {
         if (newEntry.isNotEmpty()) {
+            backupStack.addFirst(LinkedList(stack))
             if(positiveSign) stack.addFirst(newEntry)
             else stack.addFirst("-$newEntry")
             newEntry = ""
@@ -150,6 +163,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun ac() {
+        backupStack.addFirst(LinkedList(stack))
         newEntry = ""
         stack.clear()
         entryMode = false
@@ -158,7 +172,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun drop() {
-        stack.pop()
+        backupStack.addFirst(LinkedList(stack))
+        stack.removeAt(0)
         if (entryMode) {
             showEntryMode()
         } else {
@@ -231,6 +246,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun operation(operationType: String) {
+        backupStack.addFirst(LinkedList(stack))
         if (stack.size >= 2 && setOf("ADD", "SUBTRACT", "MULTIPLY", "DIVIDE", "INCREASE").contains(
                 operationType
             )
@@ -275,6 +291,47 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+    }
+
+    fun rollback(){
+        if(backupStack.size > 0){
+            stack = backupStack.pop()
+            if(entryMode) showEntryMode()
+            else showNormalMode()
+        }
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        gDetector.onTouchEvent(event)
+        return super.onTouchEvent(event)
+    }
+
+    override fun onDown(p0: MotionEvent?): Boolean {
+        return true
+    }
+
+    override fun onShowPress(p0: MotionEvent?) {
+    }
+
+    override fun onSingleTapUp(p0: MotionEvent?): Boolean {
+        return true
+    }
+
+    override fun onScroll(p0: MotionEvent?, p1: MotionEvent?, p2: Float, p3: Float): Boolean {
+        return true
+    }
+
+    override fun onLongPress(p0: MotionEvent?) {
+    }
+
+    override fun onFling(p0: MotionEvent, p1: MotionEvent, p2: Float, p3: Float): Boolean {
+        val differenceX = p1.x - p0.x
+        val differenceY = p1.y - p0.y
+        if(abs(differenceX) > abs(differenceY) && differenceX > 0 && abs(differenceX) > 100 && p2 > 50){
+
+            rollback()
+        }
+        return true
     }
 
 
