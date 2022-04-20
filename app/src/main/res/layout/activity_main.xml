@@ -36,9 +36,11 @@
                 android:layout_height="wrap_content"
                 android:text="sqrt" />
 
-            <Space
+            <Button
+                android:id="@+id/divideButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="/" />
 
             <Button
                 android:id="@+id/settingsButton"
@@ -70,10 +72,10 @@
                 android:text="*" />
 
             <Button
-                android:id="@+id/divideButton"
+                android:id="@+id/delButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="/" />
+                android:text="Del" />
 
         </TableRow>
 

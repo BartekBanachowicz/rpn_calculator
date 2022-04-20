@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         binding.acButton.setOnClickListener() { ac() }
         binding.dropButton.setOnClickListener() { drop() }
         binding.swapButton.setOnClickListener() { swap() }
+        binding.delButton.setOnClickListener() {del()}
 
         binding.plusButton.setOnClickListener() { operation("ADD") }
         binding.minusButton.setOnClickListener() { operation("SUBTRACT") }
@@ -88,6 +89,19 @@ class MainActivity : AppCompatActivity() {
         if (entryMode) {
             showEntryMode()
         } else {
+            showNormalMode()
+        }
+    }
+
+    fun del(){
+        if (newEntry.isNotEmpty()){
+            newEntry = newEntry.substring(0,newEntry.length-1)
+            updateEntry()
+        }
+
+        if (newEntry.isEmpty()){
+            entryMode = false
+            positiveSign = true
             showNormalMode()
         }
     }
