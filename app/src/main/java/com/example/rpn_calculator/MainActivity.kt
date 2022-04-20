@@ -1,10 +1,15 @@
 package com.example.rpn_calculator
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.SharedPreferences
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.preference.PreferenceManager
 import com.example.rpn_calculator.databinding.ActivityMainBinding
 import java.lang.Exception
 import java.util.*
@@ -19,12 +24,25 @@ class MainActivity : AppCompatActivity() {
     var entryMode = false
     var scale = 0
     var positiveSign = true
+    lateinit var preferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
+        this.preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
+        if(preferences.getBoolean("theme", false)){
+            binding.myLayout.setBackgroundColor(Color.GRAY)
+        }
+
+        try{
+            scale = BigDecimal(preferences.getString("scale", "0")).toInt()
+        } catch (e: Exception){
+            scale = 0
+        }
+
+        title = "RPN Calculator"
         setContentView(view)
 
         binding.zeroButton.setOnClickListener() { newNumber(0) }
@@ -45,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         binding.dropButton.setOnClickListener() { drop() }
         binding.swapButton.setOnClickListener() { swap() }
         binding.delButton.setOnClickListener() {del()}
+        binding.settingsButton.setOnClickListener() {openSettings()}
 
         binding.plusButton.setOnClickListener() { operation("ADD") }
         binding.minusButton.setOnClickListener() { operation("SUBTRACT") }
@@ -52,6 +71,12 @@ class MainActivity : AppCompatActivity() {
         binding.divideButton.setOnClickListener() { operation("DIVIDE") }
         binding.powerButton.setOnClickListener() { operation("INCREASE") }
         binding.sqrtButton.setOnClickListener() { operation("SQRT") }
+    }
+
+    fun openSettings(): Boolean {
+        val intent = Intent(this, SettingsActivity::class.java).apply { }
+        startActivity(intent)
+        return true
     }
 
     fun newNumber(number: Int) {
